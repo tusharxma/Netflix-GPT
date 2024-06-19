@@ -1,8 +1,23 @@
-import  { useState } from "react";
+import { useRef, useState } from "react";
 import Header from "./Header";
+
+import checkValidation from "../utils/validation";
 
 const Login = () => {
   const [isLogin, setLoginIn] = useState(true);
+
+  const email = useRef(null);
+  const password = useRef(null);
+  const name = useRef(null);
+  const phoneNumber = useRef(null);
+
+  const handleSubmitForm = () => {
+    const checkEmail = email.current.value;
+    const checkPassword = password.current.value;
+
+    const message = checkValidation(checkEmail, checkPassword);
+    console.log("🚀 ~ handleSubmitForm ~ message:", message);
+  };
 
   const handleSignInForm = () => {
     setLoginIn(!isLogin);
@@ -17,13 +32,16 @@ const Login = () => {
           alt="netflix"
         ></img>
       </div>
-      <form className="absolute p-10 bg-black w-4/12 mx-auto right-0 left-0 mt-48 text-white bg-opacity-85">
+      <form
+        onSubmit={(e) => e.preventDefault()}
+        className="absolute p-10 bg-black w-4/12 mx-auto right-0 left-0 mt-48 text-white bg-opacity-85"
+      >
         <h1 className="text-4xl text-left font-semibold mt-5">
           {isLogin ? "Sign In" : "Sign Up"}
         </h1>
         {!isLogin && (
           <input
-            nput
+            ref={name}
             type="text"
             placeholder="Full Name"
             className="mt-8 w-full text-xl bg-gray-700 px-3 py-3 rounded-lg"
@@ -31,13 +49,14 @@ const Login = () => {
         )}
 
         <input
+          ref={email}
           type="text"
           placeholder="Email Address"
           className="w-full text-xl bg-gray-700 px-3 py-3 mt-5 rounded-lg"
         />
-              {!isLogin && (
+        {!isLogin && (
           <input
-            nput
+            ref={phoneNumber}
             type="text"
             placeholder="Phone Number"
             className="mt-5 w-full text-xl bg-gray-700 px-3 py-3 rounded-lg"
@@ -45,14 +64,17 @@ const Login = () => {
         )}
         <br />
         <input
-          nput
+          ref={password}
           type="password"
           placeholder="Password"
           className="mt-5 w-full text-xl bg-gray-700 px-3 py-3 rounded-lg"
         />
         <br />
 
-        <button className="bg-red-700 text-xl mt-7  px-10 py-2 w-full rounded-lg mb-5">
+        <button
+          className="bg-red-700 text-xl mt-7  px-10 py-2 w-full rounded-lg mb-5"
+          onClick={handleSubmitForm}
+        >
           {isLogin ? "Sign In" : "Sign Up"}
         </button>
 
