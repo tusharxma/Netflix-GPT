@@ -1,7 +1,10 @@
 import { useRef, useState } from "react";
 import Header from "./Header";
-
-import checkValidation from "../utils/validation";
+import { useFormik } from "formik";
+import { SigninSchema, SignupSchema } from "../utils/authValidation";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../utils/firebase";
 
 const Login = () => {
   const [isLogin, setLoginIn] = useState(true);
@@ -11,12 +14,60 @@ const Login = () => {
   const name = useRef(null);
   const phoneNumber = useRef(null);
 
-  const handleSubmitForm = () => {
-    const checkEmail = email.current.value;
-    const checkPassword = password.current.value;
+  const signIninitalvalues = {
+    email: "",
+    password: "",
+  };
 
-    const message = checkValidation(checkEmail, checkPassword);
-    console.log("🚀 ~ handleSubmitForm ~ message:", message);
+  const signUpintialVlaues = {
+    name: "",
+    email: "",
+    password: "",
+    phoneNumber: "",
+  };
+
+  const { values, touched, errors, handleSubmit, handleChange, handleBlur } =
+    useFormik({
+      initialValues: isLogin ? signIninitalvalues : signUpintialVlaues,
+      validationSchema: isLogin ? SigninSchema : SignupSchema,
+      onSubmit: (values) => {
+        handleFormAction(values);
+      },
+    });
+
+  const handleFormAction = (values) => {
+    const { email, password } = values;
+
+    if (!isLogin) {
+      createUserWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          // Signed up
+          const user = userCredential.user;
+          console.log("🚀 ~ .then ~ user:", user);
+          // ...
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          console.log("🚀 ~ handleFormAction ~ errorCode: line - 51" , errorCode);
+          const errorMessage = error.message;
+          console.log("🚀 ~ handleFormAction ~ errorMessage: line- 53", errorMessage);
+          // .. 
+        });
+    } else {
+      signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          // Signed in
+          const user = userCredential.user;
+          console.log("🚀 ~ .then ~ user:", user);
+          // ...
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          console.log("🚀 ~ handleFormAction ~ errorCode: line- 66", errorCode);
+          const errorMessage = error.message;
+          console.log("🚀 ~ handleFormAction ~ errorMessage: line- 68", errorMessage);
+        });
+    }
   };
 
   const handleSignInForm = () => {
@@ -33,47 +84,90 @@ const Login = () => {
         ></img>
       </div>
       <form
-        onSubmit={(e) => e.preventDefault()}
+        onSubmit={handleSubmit}
         className="absolute p-10 bg-black w-4/12 mx-auto right-0 left-0 mt-48 text-white bg-opacity-85"
       >
         <h1 className="text-4xl text-left font-semibold mt-5">
           {isLogin ? "Sign In" : "Sign Up"}
         </h1>
         {!isLogin && (
+          <div className="mt-7 ">
+            <input
+              ref={name}
+              type="text"
+              placeholder="Full Name"
+              name="name"
+              onChange={handleChange}
+              onBlur={handleBlur}
+              value={values.name}
+              className=" w-full text-xl bg-gray-700 px-3 py-3 rounded-lg"
+            />
+            {errors.name && touched.name ? (
+              <span className="text-lg float-left ml-1 text-red-700">
+                {errors.name}
+              </span>
+            ) : null}
+          </div>
+        )}
+        <div className=" mt-7">
           <input
-            ref={name}
+            ref={email}
             type="text"
-            placeholder="Full Name"
-            className="mt-8 w-full text-xl bg-gray-700 px-3 py-3 rounded-lg"
+            placeholder="Email Address"
+            name="email"
+            onChange={handleChange}
+            onBlur={handleBlur}
+            value={values.email}
+            className="w-full text-xl bg-gray-700 px-3 py-3 rounded-lg"
           />
+          {errors.email && touched.email ? (
+            <span className="text-lg float-left ml-1 text-red-700">
+              {errors.email}
+            </span>
+          ) : null}
+        </div>
+        {!isLogin && (
+          <div className=" mt-7">
+            <input
+              ref={phoneNumber}
+              type="text"
+              name="phoneNumber"
+              onChange={handleChange}
+              onBlur={handleBlur}
+              value={values.phoneNumber}
+              placeholder="Phone Number"
+              className=" w-full text-xl bg-gray-700 px-3 py-3 rounded-lg"
+            />
+            {errors.phoneNumber && touched.phoneNumber ? (
+              <span className="text-lg float-left ml-1 text-red-700">
+                {errors.phoneNumber}
+              </span>
+            ) : null}
+          </div>
         )}
 
-        <input
-          ref={email}
-          type="text"
-          placeholder="Email Address"
-          className="w-full text-xl bg-gray-700 px-3 py-3 mt-5 rounded-lg"
-        />
-        {!isLogin && (
+        <div className="mt-7 ">
           <input
-            ref={phoneNumber}
-            type="text"
-            placeholder="Phone Number"
-            className="mt-5 w-full text-xl bg-gray-700 px-3 py-3 rounded-lg"
+            ref={password}
+            type="password"
+            placeholder="Password"
+            name="password"
+            onChange={handleChange}
+            onBlur={handleBlur}
+            value={values.password}
+            className=" w-full text-xl bg-gray-700 px-3 py-3 rounded-lg"
           />
-        )}
-        <br />
-        <input
-          ref={password}
-          type="password"
-          placeholder="Password"
-          className="mt-5 w-full text-xl bg-gray-700 px-3 py-3 rounded-lg"
-        />
+          {errors.password && touched.password ? (
+            <span className="text-lg float-left ml-1 text-red-700">
+              {errors.password}
+            </span>
+          ) : null}
+        </div>
         <br />
 
         <button
-          className="bg-red-700 text-xl mt-7  px-10 py-2 w-full rounded-lg mb-5"
-          onClick={handleSubmitForm}
+          className="bg-red-700 text-xl  px-10 py-2 w-full rounded-lg mb-5"
+          type="submit"
         >
           {isLogin ? "Sign In" : "Sign Up"}
         </button>
