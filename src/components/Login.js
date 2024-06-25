@@ -5,10 +5,16 @@ import { SigninSchema, SignupSchema } from "../utils/authValidation";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../utils/firebase";
+import { useNavigate } from "react-router-dom";
+import { updateProfile } from "firebase/auth";
+import { useDispatch } from "react-redux";
+import { addUser } from "../utils/userSlice";
+
 
 const Login = () => {
   const [isLogin, setLoginIn] = useState(true);
-
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
   const email = useRef(null);
   const password = useRef(null);
   const name = useRef(null);
@@ -36,15 +42,22 @@ const Login = () => {
     });
 
   const handleFormAction = (values) => {
-    const { email, password } = values;
+    const { email, password , name } = values;
 
     if (!isLogin) {
-      createUserWithEmailAndPassword(auth, email, password)
+      createUserWithEmailAndPassword(auth, email, password, name)
         .then((userCredential) => {
           // Signed up
           const user = userCredential.user;
-          console.log("🚀 ~ .then ~ user:", user);
-          // ...
+          updateProfile( user , {
+            displayName: name , photoURL: "https://example.com/jane-q-user/profile.jpg"
+          }).then(() => {
+            const { email ,uid, displayName } = auth.currentUser;
+            dispatch(addUser({email : email, uid : uid , name : displayName}))
+            navigate("/browse")
+          }).catch((error) => {
+          console.log("🚀 ~ .then ~ error:", error)
+          });
         })
         .catch((error) => {
           const errorCode = error.code;
@@ -58,7 +71,9 @@ const Login = () => {
         .then((userCredential) => {
           // Signed in
           const user = userCredential.user;
-          console.log("🚀 ~ .then ~ user:", user);
+          console.log("🚀 ~ .then ~ user:", user)
+
+          navigate("/browse")
           // ...
         })
         .catch((error) => {
