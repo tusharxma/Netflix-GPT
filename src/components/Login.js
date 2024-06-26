@@ -9,12 +9,12 @@ import { useNavigate } from "react-router-dom";
 import { updateProfile } from "firebase/auth";
 import { useDispatch } from "react-redux";
 import { addUser } from "../utils/userSlice";
-
+import { LOGO } from "../utils/constants";
 
 const Login = () => {
   const [isLogin, setLoginIn] = useState(true);
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const email = useRef(null);
   const password = useRef(null);
   const name = useRef(null);
@@ -42,45 +42,57 @@ const Login = () => {
     });
 
   const handleFormAction = (values) => {
-    const { email, password , name } = values;
+    const { email, password, name } = values;
 
     if (!isLogin) {
       createUserWithEmailAndPassword(auth, email, password, name)
         .then((userCredential) => {
           // Signed up
           const user = userCredential.user;
-          updateProfile( user , {
-            displayName: name , photoURL: "https://example.com/jane-q-user/profile.jpg"
-          }).then(() => {
-            const { email ,uid, displayName } = auth.currentUser;
-            dispatch(addUser({email : email, uid : uid , name : displayName}))
-            navigate("/browse")
-          }).catch((error) => {
-          console.log("🚀 ~ .then ~ error:", error)
-          });
+          updateProfile(user, {
+            displayName: name,
+            photoURL: "https://example.com/jane-q-user/profile.jpg",
+          })
+            .then(() => {
+              const { email, uid, displayName } = auth.currentUser;
+              dispatch(addUser({ email: email, uid: uid, name: displayName }));
+              navigate("/browse");
+            })
+            .catch((error) => {
+              console.log("🚀 ~ .then ~ error:", error);
+            });
         })
         .catch((error) => {
           const errorCode = error.code;
-          console.log("🚀 ~ handleFormAction ~ errorCode: line - 51" , errorCode);
+          console.log(
+            "🚀 ~ handleFormAction ~ errorCode: line - 51",
+            errorCode
+          );
           const errorMessage = error.message;
-          console.log("🚀 ~ handleFormAction ~ errorMessage: line- 53", errorMessage);
-          // .. 
+          console.log(
+            "🚀 ~ handleFormAction ~ errorMessage: line- 53",
+            errorMessage
+          );
+          // ..
         });
     } else {
       signInWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
           // Signed in
-          const user = userCredential.user;
-          console.log("🚀 ~ .then ~ user:", user)
+          const user = userCredential?.user;
+          console.log("🚀 ~ .then ~ user:", user);
 
-          navigate("/browse")
+          navigate("/browse");
           // ...
         })
         .catch((error) => {
           const errorCode = error.code;
           console.log("🚀 ~ handleFormAction ~ errorCode: line- 66", errorCode);
           const errorMessage = error.message;
-          console.log("🚀 ~ handleFormAction ~ errorMessage: line- 68", errorMessage);
+          console.log(
+            "🚀 ~ handleFormAction ~ errorMessage: line- 68",
+            errorMessage
+          );
         });
     }
   };
@@ -93,10 +105,7 @@ const Login = () => {
     <div className="text-4xl text-center">
       <Header />
       <div className="absolute">
-        <img
-          src="https://assets.nflxext.com/ffe/siteui/vlv3/51c1d7f7-3179-4a55-93d9-704722898999/be90e543-c951-40d0-9ef5-e067f3e33d16/IN-en-20240610-popsignuptwoweeks-perspective_alpha_website_medium.jpg"
-          alt="netflix"
-        ></img>
+        <img src={LOGO} alt="netflix"></img>
       </div>
       <form
         onSubmit={handleSubmit}
